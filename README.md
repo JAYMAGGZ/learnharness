@@ -35,6 +35,8 @@ Instead of just giving you an explanation, it uses your answers and thinking to 
 
 The agent can also research questions in the background, create visual explanations, show your own images in the lesson and mark them up with arrows and labels, and build interactive demonstrations.
 
+> **Fork:** this version also mirrors your knowledge graph and sessions into an Obsidian vault as linked notes. See [docs/obsidian.md](docs/obsidian.md).
+
 ## Knowledge that carries forward
 
 What you are taught accumulates as propositions and reasoning chains: individual claims and the premises that lead to them. The graph shows this structure, with links back to the source sessions. You can also import notes.

@@ -19,6 +19,7 @@ import type { LhMessage } from "../core/native-messages.ts";
 import { activeProblemOf, danglingQuestionOf } from "../core/native-messages.ts";
 import { phaseAt3Lh } from "../core/phases.ts";
 import { removeLeftoverTemps, writeFileAtomicSync } from "./atomic-write.ts";
+import { scheduleObsidianSync } from "./obsidian-mirror.ts";
 
 function chatFile(id: string): string {
 	if (!/^[A-Za-z0-9_-]+$/.test(id)) throw new Error(`Invalid chat id: ${id}`);
@@ -58,6 +59,7 @@ function createChat(title: string, kind?: "practice"): ChatRecord {
  *  A future-version guard lives on the read side (getChat). */
 function writeChat(record: ChatRecord): void {
 	writeFileAtomicSync(chatFile(record.id), JSON.stringify({ ...record, version: CURRENT_CHAT_VERSION }, null, "\t"), { allowInPlaceFallback: true });
+	scheduleObsidianSync(); // fork: keep the session note in the Obsidian vault current
 }
 
 function getChat(id: string): ChatRecord | null {
@@ -210,6 +212,7 @@ function deleteChat(id: string): boolean {
 		fs.unlinkSync(chatFile(id));
 		removeLeftoverTemps(chatFile(id));
 		emit("chats-changed", {}); // only a real removal — the present-entry law
+		scheduleObsidianSync();
 		return true;
 	} catch {
 		return false; // never existed, already deleted, or unreadable — same answer

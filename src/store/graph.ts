@@ -48,6 +48,7 @@ import type {
 	SessionCheckpoint,
 } from "../core/contracts.ts";
 import type { GraphStore } from "../core/ports.ts";
+import { scheduleObsidianSync } from "./obsidian-mirror.ts";
 
 // ─── JSONL primitives ────────────────────────────────────────────────────────
 
@@ -55,6 +56,7 @@ function appendLine<T>(file: string, record: T): void {
 	fs.mkdirSync(path.dirname(file), { recursive: true });
 	ensureGraphFormat(); // the lazy format stamp (graph-format.ts)
 	fs.appendFileSync(file, `${JSON.stringify(record)}\n`, "utf-8");
+	scheduleObsidianSync(); // fork: mirror the graph into the Obsidian vault
 }
 
 function readRawLines(file: string): unknown[] {
@@ -171,6 +173,7 @@ export const graphStore: GraphStore = {
 		const prev = all[source.id];
 		all[source.id] = prev ? { ...source, extractions: prev.extractions } : source;
 		writeSourceMap(all);
+		scheduleObsidianSync();
 	},
 	readSources(): NotesSource[] {
 		return Object.values(readSourceMap());
@@ -183,6 +186,7 @@ export const graphStore: GraphStore = {
 		if (removed === 0) return 0;
 		writeFileAtomicSync(SOURCES_FILE, JSON.stringify(all, null, "\t"));
 		removeLeftoverTemps(SOURCES_FILE); // crash leftovers would still hold the deleted sources
+		scheduleObsidianSync();
 		return removed;
 	},
 	/** Idempotent per startedAt — same discipline as chats.appendExtractionUsage. */
@@ -230,6 +234,7 @@ export const graphStore: GraphStore = {
 			writeFileAtomicSync(file, body);
 			removeLeftoverTemps(file); // crash leftovers would still hold the purged records
 		}
+		scheduleObsidianSync();
 	},
 };
 
